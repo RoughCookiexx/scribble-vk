@@ -1,0 +1,27 @@
+use std::mem::size_of;
+
+use vulkanalia::prelude::v1_0::*;
+
+pub type Vec2 = cgmath::Vector2<f32>;
+pub type Vec3 = cgmath::Vector3<f32>;
+pub type Mat4 = cgmath::Matrix4<f32>;
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct Vertex {
+    pub pos: Vec2,
+}
+
+impl Vertex {
+    pub fn new(pos: Vec2) -> Self {
+        Self { pos }
+    }
+
+    pub fn binding_description() -> vk::VertexInputBindingDescription {
+        vk::VertexInputBindingDescription::builder()
+            .binding(0)
+            .stride(size_of::<Vertex>() as u32)
+            .input_rate(vk::VertexInputRate::VERTEX)
+            .build()
+    }
+}
