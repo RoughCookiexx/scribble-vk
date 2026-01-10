@@ -253,6 +253,19 @@ impl Renderer {
             .device
             .cmd_begin_render_pass(command_buffer, &info, vk::SubpassContents::INLINE);
 
+        // Bind pipeline
+        context.device.cmd_bind_pipeline(
+            command_buffer,
+            vk::PipelineBindPoint::GRAPHICS,
+            self.pipeline,
+        );
+
+        // Bind vertex buffer
+        context.device.cmd_bind_vertex_buffers(command_buffer, 0, &[vertex_buffer], &[0]);
+
+        // Draw (change vertex count based on your actual data)
+        context.device.cmd_draw(command_buffer, 3, 1, 0, 0);
+
         context.device.cmd_end_render_pass(command_buffer);
         context.device.end_command_buffer(command_buffer)?;
 

@@ -73,7 +73,7 @@ pub unsafe fn create_pipeline(
     let vertex_input_attribute_description = &[vk::VertexInputAttributeDescription::builder()
         .binding(0)
         .location(0)
-        .format(vk::Format::R32G32B32_SFLOAT)
+        .format(vk::Format::R32G32_SFLOAT)  // Vec2 = 2 floats
         .offset(0)
         .build()];
 

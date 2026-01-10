@@ -61,6 +61,31 @@ impl App {
             },
         ];
 
+        // Copy vertices to staging buffer
+        let size = (std::mem::size_of::<Vertex>() * vertices.len()) as u64;
+        let memory = context.device.map_memory(
+            staging_buffer_memory,
+            0,
+            size,
+            vk::MemoryMapFlags::empty(),
+        )?;
+        std::ptr::copy_nonoverlapping(vertices.as_ptr(), memory.cast(), vertices.len());
+        context.device.unmap_memory(staging_buffer_memory);
+
+        // Copy from staging to device-local buffer
+        crate::vulkan::buffer::copy_buffer(
+            &context.device,
+            context.graphics_queue,
+            context.command_pool,
+            staging_buffer,
+            vertex_buffer,
+            size,
+        )?;
+
+        // Clean up staging buffer (we don't need it anymore for now)
+        context.device.destroy_buffer(staging_buffer, None);
+        context.device.free_memory(staging_buffer_memory, None);
+
         Ok(Self {
             context,
             renderer,
