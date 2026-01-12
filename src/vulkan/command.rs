@@ -46,7 +46,7 @@ pub unsafe fn create_command_pools(
 pub unsafe fn create_command_buffers(
     device: &Device,
     command_pools: &[vk::CommandPool],
-) -> Result<(Vec<vk::CommandBuffer>)> {
+) -> Result<Vec<vk::CommandBuffer>> {
     let mut command_buffers = Vec::new();
 
     for &command_pool in command_pools {

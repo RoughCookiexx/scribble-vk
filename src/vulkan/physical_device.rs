@@ -9,7 +9,7 @@ const DEVICE_EXTENSIONS: &[vk::ExtensionName] = &[vk::KHR_SWAPCHAIN_EXTENSION.na
 pub unsafe fn pick_physical_device(
     instance: &Instance,
     surface: vk::SurfaceKHR,
-) -> Result<(vk::PhysicalDevice)> {
+) -> Result<vk::PhysicalDevice> {
     for physical_device in instance.enumerate_physical_devices()? {
         let properties = instance.get_physical_device_properties(physical_device);
 

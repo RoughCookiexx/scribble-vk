@@ -1,5 +1,4 @@
 use std::mem::size_of;
-use std::ptr::copy_nonoverlapping as memcpy;
 
 use anyhow::Result;
 use vulkanalia::prelude::v1_0::*;
