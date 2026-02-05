@@ -7,6 +7,7 @@ use super::command::{create_command_buffers, create_command_pools};
 use super::context::VulkanContext;
 use super::pipeline::{create_framebuffers, create_pipeline, create_render_pass};
 use super::swapchain::{create_swapchain, create_swapchain_image_views};
+use crate::types::RECT_INDICES;
 use crate::{
     config::Config,
     types::{Vec3, RECT},
@@ -287,7 +288,7 @@ impl Renderer {
             .device
             .cmd_bind_vertex_buffers(command_buffer, 1, &[line_buffer], &[0]);
 
-        let totally_temporary_view_vector = Vec3::new(0., 0., 0.);
+        let totally_temporary_view_vector = Vec3::new(0., 0., 1.);
 
         let view_bytes = std::slice::from_raw_parts(
             &totally_temporary_view_vector as *const Vec3 as *const u8,
@@ -302,9 +303,14 @@ impl Renderer {
             view_bytes,
         );
 
-        context
-            .device
-            .cmd_draw_indexed(command_buffer, RECT.len() as u32, line_count, 0, 0, 0);
+        context.device.cmd_draw_indexed(
+            command_buffer,
+            RECT_INDICES.len() as u32,
+            line_count,
+            0,
+            0,
+            0,
+        );
 
         context.device.cmd_end_render_pass(command_buffer);
         context.device.end_command_buffer(command_buffer)?;

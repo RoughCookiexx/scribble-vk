@@ -201,7 +201,7 @@ pub unsafe fn create_instance_buffers(
         vertex_buffer,
         0,
         buffer_size,
-    );
+    )?;
 
     let memory = device.map_memory(
         staging_buffer_memory,
@@ -263,7 +263,7 @@ pub unsafe fn create_index_buffers(
         vk::MemoryMapFlags::empty(),
     )?;
 
-    memcpy(RECT.as_ptr(), memory.cast(), RECT.len());
+    memcpy(RECT_INDICES.as_ptr(), memory.cast(), RECT_INDICES.len());
     device.unmap_memory(staging_buffer_memory);
 
     copy_buffer(

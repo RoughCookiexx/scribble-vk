@@ -61,9 +61,9 @@ impl Line {
     }
     pub fn binding_description() -> vk::VertexInputBindingDescription {
         vk::VertexInputBindingDescription::builder()
-            .binding(0)
+            .binding(1)
             .stride(size_of::<Line>() as u32)
-            .input_rate(vk::VertexInputRate::VERTEX)
+            .input_rate(vk::VertexInputRate::INSTANCE)
             .build()
     }
 }

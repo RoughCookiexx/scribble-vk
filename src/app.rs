@@ -92,6 +92,7 @@ impl App {
 
     /// Renders a frame for our Vulkan app
     pub unsafe fn render(&mut self, window: &Window) -> Result<()> {
+        let line_count = self.lines.iter().map(|v| v.len()).sum::<usize>() as u32;
         let needs_recreate = self.renderer.render(
             window,
             &self.context,
@@ -100,7 +101,7 @@ impl App {
             self.vertex_buffer,
             self.geometry_index_buffer,
             self.start,
-            self.lines.len() as u32,
+            line_count,
         )?;
 
         if self.resized {

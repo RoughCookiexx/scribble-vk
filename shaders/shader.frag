@@ -9,7 +9,7 @@ layout(location = 4) in vec2 direction;
 layout(location = 0) out vec4 outColor;
 
 layout(push_constant) uniform PushConstants {
-    mat3 transform;
+    vec3 transform;
 } push;
 
 const float aaborder = 0.00445;
@@ -25,7 +25,8 @@ void main() {
     vec2 a = instance_position - direction / 2.;
     vec2 b = instance_position + direction / 2.;
     float d = line_segment(projected_position, a, b) - thickness;
-    float scaled_border = aaborder / push.transform[1][1];
+    // Use scale component (z) for anti-aliasing border
+    float scaled_border = aaborder / push.transform.z;
     float edge1 = -scaled_border;
     float edge2 = 0.;
 

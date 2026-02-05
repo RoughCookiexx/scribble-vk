@@ -149,7 +149,7 @@ pub unsafe fn create_pipeline(
 
     let attachment = vk::PipelineColorBlendAttachmentState::builder()
         .color_write_mask(vk::ColorComponentFlags::all())
-        .blend_enable(false);
+        .blend_enable(true);
 
     let attachments = &[attachment];
     let color_blend_state = vk::PipelineColorBlendStateCreateInfo::builder()
@@ -159,7 +159,7 @@ pub unsafe fn create_pipeline(
     let vert_push_constant_range = vk::PushConstantRange::builder()
         .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
         .offset(0)
-        .size(48);
+        .size(12);
 
     let set_layouts = &[];
     let push_constant_range = &[vert_push_constant_range];

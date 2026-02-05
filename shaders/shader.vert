@@ -13,15 +13,18 @@ layout(location = 4) out vec2 direction;
 const float THICKNESS = 5;
 
 layout(push_constant) uniform PushConstants {
-    mat3 transform;
+    vec3 transform;
 } push;
 
 void main() {
     vec2 n = vec2(-dir.y, dir.x) / length(dir);
     vec2 apos = pos.y * dir + pos.x * n * THICKNESS;
     vec2 world_pos = apos + inst_pos;
-    vec3 transformed = push.transform * vec3(world_pos, 1.0);
-    gl_Position = vec4(transformed.xy, 0.0, 1.0);
+
+    // Apply transform: push.transform = (offset_x, offset_y, scale)
+    vec2 scaled_pos = world_pos * push.transform.z;
+    vec2 final_pos = scaled_pos + push.transform.xy;
+    gl_Position = vec4(final_pos, 0.0, 1.0);
 
     local_position = pos;
     projected_position = vec2(world_pos.x, world_pos.y);
