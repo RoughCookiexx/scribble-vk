@@ -101,6 +101,9 @@ fn main() -> Result<()> {
                 WindowEvent::MouseInput { state, button, .. } => {
                     if button == MouseButton::Left {
                         left_mouse_down = state == ElementState::Pressed;
+                        if !left_mouse_down {
+                            unsafe {app.commit_new_line()};
+                        }
                         needs_redraw = true;
                     }
                 }
