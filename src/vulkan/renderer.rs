@@ -7,7 +7,10 @@ use super::command::{create_command_buffers, create_command_pools};
 use super::context::VulkanContext;
 use super::pipeline::{create_framebuffers, create_pipeline, create_render_pass};
 use super::swapchain::{create_swapchain, create_swapchain_image_views};
-use crate::{config::Config, types::RECT};
+use crate::{
+    config::Config,
+    types::{Vec3, RECT},
+};
 
 const MAX_FRAMES_IN_FLIGHT: usize = 2;
 
@@ -166,6 +169,7 @@ impl Renderer {
 
         self.update_command_buffer(
             context,
+            self.pipeline_layout,
             image_index,
             rect_buffer,
             line_buffer,
@@ -221,6 +225,7 @@ impl Renderer {
     unsafe fn update_command_buffer(
         &mut self,
         context: &VulkanContext,
+        pipeline_layout: vk::PipelineLayout,
         image_index: usize,
         rect_buffer: vk::Buffer,
         line_buffer: vk::Buffer,
@@ -281,6 +286,21 @@ impl Renderer {
         context
             .device
             .cmd_bind_vertex_buffers(command_buffer, 1, &[line_buffer], &[0]);
+
+        let totally_temporary_view_vector = Vec3::new(0., 0., 0.);
+
+        let view_bytes = std::slice::from_raw_parts(
+            &totally_temporary_view_vector as *const Vec3 as *const u8,
+            size_of::<Vec3>(),
+        );
+
+        context.device.cmd_push_constants(
+            command_buffer,
+            pipeline_layout,
+            vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT,
+            0,
+            view_bytes,
+        );
 
         context
             .device

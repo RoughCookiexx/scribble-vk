@@ -16,7 +16,10 @@ pub unsafe fn create_command_pool(
     let indices = QueueFamilyIndices::get(instance, surface, physical_device)?;
 
     let info = vk::CommandPoolCreateInfo::builder()
-        .flags(vk::CommandPoolCreateFlags::TRANSIENT)
+        .flags(
+            vk::CommandPoolCreateFlags::TRANSIENT
+                | vk::CommandPoolCreateFlags::RESET_COMMAND_BUFFER,
+        )
         .queue_family_index(indices.graphics);
 
     Ok(device.create_command_pool(&info, None)?)

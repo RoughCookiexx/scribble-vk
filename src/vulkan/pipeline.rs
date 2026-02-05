@@ -1,5 +1,5 @@
 use crate::config::ShaderConfig;
-use crate::types::{Line, RECT, Vec2};
+use crate::types::{Line, Vec2, RECT};
 use anyhow::Result;
 use vulkanalia::bytecode::Bytecode;
 use vulkanalia::prelude::v1_0::*;
@@ -156,8 +156,16 @@ pub unsafe fn create_pipeline(
         .logic_op_enable(false)
         .attachments(attachments);
 
+    let vert_push_constant_range = vk::PushConstantRange::builder()
+        .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
+        .offset(0)
+        .size(48);
+
     let set_layouts = &[];
-    let layout_info = vk::PipelineLayoutCreateInfo::builder().set_layouts(set_layouts);
+    let push_constant_range = &[vert_push_constant_range];
+    let layout_info = vk::PipelineLayoutCreateInfo::builder()
+        .set_layouts(set_layouts)
+        .push_constant_ranges(push_constant_range);
 
     let pipeline_layout = device.create_pipeline_layout(&layout_info, None)?;
 

@@ -12,18 +12,19 @@ layout(location = 4) out vec2 direction;
 
 const float THICKNESS = 5;
 
-layout(binding = 0) uniform UniformBufferObject {
-    mat4 mvp;
-} ubo;
+layout(push_constant) uniform PushConstants {
+    mat3 transform;
+} push;
+
 void main() {
     vec2 n = vec2(-dir.y, dir.x) / length(dir);
     vec2 apos = pos.y * dir + pos.x * n * THICKNESS;
-    vec4 new_pos = vec4(apos + inst_pos, 0.0, 1.0);
-    vec4 res_pos = ubo.mvp * new_pos;
-    gl_Position = res_pos;
+    vec2 world_pos = apos + inst_pos;
+    vec3 transformed = push.transform * vec3(world_pos, 1.0);
+    gl_Position = vec4(transformed.xy, 0.0, 1.0);
 
     local_position = pos;
-    projected_position = vec2(new_pos.x, new_pos.y);
+    projected_position = vec2(world_pos.x, world_pos.y);
     instance_position = inst_pos;
     direction = dir;
     thickness = THICKNESS;

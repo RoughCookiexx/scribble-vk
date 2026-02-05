@@ -115,15 +115,15 @@ impl App {
     pub unsafe fn append_vertex(&mut self, new_vertex: Vec2) -> Result<()> {
         match self.new_lines.last() {
             Some(last_element) => {
-                // If the points are very close, ignore the new one
-                if last_element.position.abs_diff_eq(&new_vertex, 1e-3) {
+                // If the points are far enough apart, add a new line
+                if !last_element.position.abs_diff_eq(&new_vertex, 1e-3) {
                     self.new_lines
                         .push(Line::new(last_element.position, new_vertex));
                 }
             }
             None => match self.line_start {
                 Some(line_start) => {
-                    if line_start.abs_diff_eq(&new_vertex, 1e-3) {
+                    if !line_start.abs_diff_eq(&new_vertex, 1e-3) {
                         self.new_lines.push(Line::new(line_start, new_vertex));
                     }
                 }
