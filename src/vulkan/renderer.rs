@@ -7,7 +7,7 @@ use super::command::{create_command_buffers, create_command_pools};
 use super::context::VulkanContext;
 use super::pipeline::{create_framebuffers, create_pipeline, create_render_pass};
 use super::swapchain::{create_swapchain, create_swapchain_image_views};
-use crate::config::Config;
+use crate::{config::Config, types::RECT};
 
 const MAX_FRAMES_IN_FLIGHT: usize = 2;
 
@@ -47,7 +47,6 @@ impl Renderer {
         window: &Window,
         context: &VulkanContext,
         config: &Config,
-        vertex_buffer: vk::Buffer,
     ) -> Result<Self> {
         // Create swapchain
         let (swapchain, swapchain_images, swapchain_format, swapchain_extent) = create_swapchain(
@@ -62,12 +61,7 @@ impl Renderer {
             create_swapchain_image_views(&context.device, &swapchain_images, swapchain_format)?;
 
         // Create render pass and pipeline
-        let render_pass = create_render_pass(
-            &context.instance,
-            context.physical_device,
-            &context.device,
-            swapchain_format,
-        )?;
+        let render_pass = create_render_pass(&context.device, swapchain_format)?;
 
         let (pipeline, pipeline_layout) = create_pipeline(
             &context.device,
@@ -85,7 +79,7 @@ impl Renderer {
         )?;
 
         // Create command pools and buffers
-        let (command_pools) = create_command_pools(
+        let command_pools = create_command_pools(
             &context.instance,
             &context.device,
             context.surface,
@@ -133,8 +127,11 @@ impl Renderer {
         window: &Window,
         context: &VulkanContext,
         config: &Config,
-        vertex_buffer: vk::Buffer,
+        rect_buffer: vk::Buffer,
+        line_buffer: vk::Buffer,
+        index_buffer: vk::Buffer,
         start_time: std::time::Instant,
+        line_count: u32,
     ) -> Result<bool> {
         let in_flight_fence = self.in_flight_fences[self.frame];
 
@@ -167,7 +164,15 @@ impl Renderer {
 
         self.images_in_flight[image_index] = in_flight_fence;
 
-        self.update_command_buffer(context, image_index, vertex_buffer, start_time)?;
+        self.update_command_buffer(
+            context,
+            image_index,
+            rect_buffer,
+            line_buffer,
+            index_buffer,
+            start_time,
+            line_count,
+        )?;
 
         let wait_semaphores = &[self.image_available_semaphores[self.frame]];
         let wait_stages = &[vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT];
@@ -217,8 +222,11 @@ impl Renderer {
         &mut self,
         context: &VulkanContext,
         image_index: usize,
-        vertex_buffer: vk::Buffer,
+        rect_buffer: vk::Buffer,
+        line_buffer: vk::Buffer,
+        index_buffer: vk::Buffer,
         start_time: std::time::Instant,
+        line_count: u32,
     ) -> Result<()> {
         let command_pool = self.command_pools[image_index];
         context
@@ -260,11 +268,23 @@ impl Renderer {
             self.pipeline,
         );
 
-        // Bind vertex buffer
-        context.device.cmd_bind_vertex_buffers(command_buffer, 0, &[vertex_buffer], &[0]);
+        context.device.cmd_bind_index_buffer(
+            command_buffer,
+            index_buffer,
+            0,
+            vk::IndexType::UINT16,
+        );
 
-        // Draw (change vertex count based on your actual data)
-        context.device.cmd_draw(command_buffer, 3, 1, 0, 0);
+        context
+            .device
+            .cmd_bind_vertex_buffers(command_buffer, 0, &[rect_buffer], &[0]);
+        context
+            .device
+            .cmd_bind_vertex_buffers(command_buffer, 1, &[line_buffer], &[0]);
+
+        context
+            .device
+            .cmd_draw_indexed(command_buffer, RECT.len() as u32, line_count, 0, 0, 0);
 
         context.device.cmd_end_render_pass(command_buffer);
         context.device.end_command_buffer(command_buffer)?;
@@ -300,12 +320,7 @@ impl Renderer {
             self.swapchain_format,
         )?;
 
-        self.render_pass = create_render_pass(
-            &context.instance,
-            context.physical_device,
-            &context.device,
-            self.swapchain_format,
-        )?;
+        self.render_pass = create_render_pass(&context.device, self.swapchain_format)?;
 
         let (pipeline, pipeline_layout) = create_pipeline(
             &context.device,

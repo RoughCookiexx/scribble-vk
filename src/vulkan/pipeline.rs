@@ -1,12 +1,10 @@
 use crate::config::ShaderConfig;
-use crate::types::Vertex;
+use crate::types::{Line, RECT, Vec2};
 use anyhow::Result;
 use vulkanalia::bytecode::Bytecode;
 use vulkanalia::prelude::v1_0::*;
 
 pub unsafe fn create_render_pass(
-    instance: &Instance,
-    physical_device: vk::PhysicalDevice,
     device: &Device,
     swapchain_format: vk::Format,
 ) -> Result<vk::RenderPass> {
@@ -70,17 +68,49 @@ pub unsafe fn create_pipeline(
         .module(frag_shader_module)
         .name(b"main\0");
 
-    let vertex_input_attribute_description = &[vk::VertexInputAttributeDescription::builder()
+    let rect_binding = vk::VertexInputBindingDescription::builder()
+        .binding(0)
+        .stride(size_of::<Vec2>() as u32)
+        .input_rate(vk::VertexInputRate::VERTEX)
+        .build();
+
+    let line_binding = vk::VertexInputBindingDescription::builder()
+        .binding(1)
+        .stride(size_of::<Line>() as u32)
+        .input_rate(vk::VertexInputRate::INSTANCE)
+        .build();
+
+    let rect_vertex_attribute_description = vk::VertexInputAttributeDescription::builder()
         .binding(0)
         .location(0)
-        .format(vk::Format::R32G32_SFLOAT)  // Vec2 = 2 floats
+        .format(vk::Format::R32G32_SFLOAT)
         .offset(0)
-        .build()];
+        .build();
 
-    let binding_descriptions = &[Vertex::binding_description()];
+    let position_attribute_description = vk::VertexInputAttributeDescription::builder()
+        .binding(1)
+        .location(1)
+        .format(vk::Format::R32G32_SFLOAT)
+        .offset(0)
+        .build();
+
+    let direction_attribute_description = vk::VertexInputAttributeDescription::builder()
+        .binding(1)
+        .location(2)
+        .format(vk::Format::R32G32_SFLOAT)
+        .offset(8)
+        .build();
+
+    let binding_descriptions = &[rect_binding, line_binding];
+    let attribute_descriptions = &[
+        rect_vertex_attribute_description,
+        position_attribute_description,
+        direction_attribute_description,
+    ];
+
     let vertex_input_state = vk::PipelineVertexInputStateCreateInfo::builder()
         .vertex_binding_descriptions(binding_descriptions)
-        .vertex_attribute_descriptions(vertex_input_attribute_description);
+        .vertex_attribute_descriptions(attribute_descriptions);
 
     let input_assembly_state = vk::PipelineInputAssemblyStateCreateInfo::builder()
         .topology(vk::PrimitiveTopology::TRIANGLE_LIST)
