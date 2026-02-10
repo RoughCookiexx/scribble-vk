@@ -19,11 +19,11 @@ use std::time::{Duration, Instant};
 use winit::dpi::LogicalSize;
 use winit::event::{ElementState, Event, MouseButton, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::keyboard::{KeyCode, PhysicalKey};
+use winit::keyboard::{KeyCode, ModifiersState, PhysicalKey};
 use winit::window::WindowBuilder;
 
 use app::App;
-use types::{Line, Vec2};
+use types::Vec2;
 
 const FRAME_TIME: Duration = Duration::from_micros(16_667);
 
@@ -46,6 +46,7 @@ fn main() -> Result<()> {
     let mut left_mouse_down = false;
     let mut last_frame = Instant::now();
     let mut needs_redraw = true;
+    let mut modifiers = ModifiersState::empty();
 
     event_loop.run(move |event, elwt| {
         match event {
@@ -87,16 +88,28 @@ fn main() -> Result<()> {
                     elwt.exit();
                     unsafe { app.destroy(); }
                 }
-                // Handle keyboard events.
-//                WindowEvent::KeyboardInput { event, .. } => {
-//                    if event.state == ElementState::Pressed {
-//                        match event.physical_key {
-//                            PhysicalKey::Code(KeyCode::ArrowLeft) if app.models > 1 => app.models -= 1,
-//                            PhysicalKey::Code(KeyCode::ArrowRight) if app.models < 4 => app.models += 1,
-//                            _ => { }
-//                        }
-//                    }
-//                }
+                // Track modifier state
+                WindowEvent::ModifiersChanged(new_modifiers) => {
+                    modifiers = new_modifiers.state();
+                }
+                // Handle keyboard events
+                WindowEvent::KeyboardInput { event, .. } => {
+                    if event.state == ElementState::Pressed {
+                        match event.physical_key {
+                            // Ctrl+Z for undo
+                            PhysicalKey::Code(KeyCode::KeyZ) if modifiers.control_key() => {
+                                app.undo();
+                                needs_redraw = true;
+                            }
+                            // U for undo
+                            PhysicalKey::Code(KeyCode::KeyU) => {
+                                app.undo();
+                                needs_redraw = true;
+                            }
+                            _ => { }
+                        }
+                    }
+                }
                 // Track mouse button state
                 WindowEvent::MouseInput { state, button, .. } => {
                     if button == MouseButton::Left {

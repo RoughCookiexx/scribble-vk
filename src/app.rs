@@ -144,10 +144,11 @@ impl App {
     pub unsafe fn append_vertex(&mut self, new_vertex: Vec2) -> Result<()> {
         match self.new_lines.last() {
             Some(last_element) => {
+                // Calculate the endpoint of the last line (position + dir/2)
+                let last_end_point = last_element.position + last_element.dir / 2.0;
                 // If the points are far enough apart, add a new line
-                if !last_element.position.abs_diff_eq(&new_vertex, 1e-3) {
-                    self.new_lines
-                        .push(Line::new(last_element.end_point, new_vertex));
+                if !last_end_point.abs_diff_eq(&new_vertex, 1e-3) {
+                    self.new_lines.push(Line::new(last_end_point, new_vertex));
                 }
             }
             None => match self.line_start {
@@ -222,6 +223,13 @@ impl App {
         }
 
         Ok(())
+    }
+
+    pub fn undo(&mut self) {
+        // Remove the last committed stroke if there is one
+        if self.lines.len() > 1 {
+            self.lines.pop();
+        }
     }
 
     /// Destroys our Vulkan app
