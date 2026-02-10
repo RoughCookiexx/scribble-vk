@@ -87,18 +87,18 @@ pub unsafe fn create_pipeline(
         .offset(0)
         .build();
 
-    let position_attribute_description = vk::VertexInputAttributeDescription::builder()
+    let direction_attribute_description = vk::VertexInputAttributeDescription::builder()
         .binding(1)
         .location(1)
         .format(vk::Format::R32G32_SFLOAT)
-        .offset(0)
+        .offset(8)
         .build();
 
-    let direction_attribute_description = vk::VertexInputAttributeDescription::builder()
+    let position_attribute_description = vk::VertexInputAttributeDescription::builder()
         .binding(1)
         .location(2)
         .format(vk::Format::R32G32_SFLOAT)
-        .offset(8)
+        .offset(0)
         .build();
 
     let binding_descriptions = &[rect_binding, line_binding];
@@ -149,7 +149,13 @@ pub unsafe fn create_pipeline(
 
     let attachment = vk::PipelineColorBlendAttachmentState::builder()
         .color_write_mask(vk::ColorComponentFlags::all())
-        .blend_enable(true);
+        .blend_enable(true)
+        .src_color_blend_factor(vk::BlendFactor::SRC_ALPHA)
+        .dst_color_blend_factor(vk::BlendFactor::ONE_MINUS_SRC_ALPHA)
+        .color_blend_op(vk::BlendOp::MAX)
+        .src_alpha_blend_factor(vk::BlendFactor::ONE)
+        .dst_alpha_blend_factor(vk::BlendFactor::ZERO)
+        .alpha_blend_op(vk::BlendOp::MIN);
 
     let attachments = &[attachment];
     let color_blend_state = vk::PipelineColorBlendStateCreateInfo::builder()

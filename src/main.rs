@@ -102,7 +102,7 @@ fn main() -> Result<()> {
                     if button == MouseButton::Left {
                         left_mouse_down = state == ElementState::Pressed;
                         if !left_mouse_down {
-                            unsafe {app.commit_new_line()};
+                            unsafe { app.commit_new_line().unwrap() };
                         }
                         needs_redraw = true;
                     }

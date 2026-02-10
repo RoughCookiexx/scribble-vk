@@ -142,7 +142,7 @@ pub unsafe fn create_vertex_buffers(
         device,
         physical_device,
         staging_buffer_size,
-        vk::BufferUsageFlags::TRANSFER_SRC,
+        vk::BufferUsageFlags::TRANSFER_SRC | vk::BufferUsageFlags::VERTEX_BUFFER,
         vk::MemoryPropertyFlags::HOST_COHERENT | vk::MemoryPropertyFlags::HOST_VISIBLE,
     )?;
 

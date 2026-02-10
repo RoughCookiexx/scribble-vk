@@ -10,7 +10,7 @@ layout(location = 2) out vec2 instance_position;
 layout(location = 3) out float thickness;
 layout(location = 4) out vec2 direction;
 
-const float THICKNESS = 5;
+const float THICKNESS = 0.004;
 
 layout(push_constant) uniform PushConstants {
     vec3 transform;

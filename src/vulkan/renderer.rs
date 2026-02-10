@@ -133,9 +133,11 @@ impl Renderer {
         config: &Config,
         rect_buffer: vk::Buffer,
         line_buffer: vk::Buffer,
+        staging_line_buffer: vk::Buffer,
         index_buffer: vk::Buffer,
         start_time: std::time::Instant,
         line_count: u32,
+        new_line_count: u32,
     ) -> Result<bool> {
         let in_flight_fence = self.in_flight_fences[self.frame];
 
@@ -174,9 +176,11 @@ impl Renderer {
             image_index,
             rect_buffer,
             line_buffer,
+            staging_line_buffer,
             index_buffer,
             start_time,
             line_count,
+            new_line_count,
         )?;
 
         let wait_semaphores = &[self.image_available_semaphores[self.frame]];
@@ -230,9 +234,11 @@ impl Renderer {
         image_index: usize,
         rect_buffer: vk::Buffer,
         line_buffer: vk::Buffer,
+        staging_line_buffer: vk::Buffer,
         index_buffer: vk::Buffer,
         start_time: std::time::Instant,
         line_count: u32,
+        new_line_count: u32,
     ) -> Result<()> {
         let command_pool = self.command_pools[image_index];
         context
@@ -284,9 +290,6 @@ impl Renderer {
         context
             .device
             .cmd_bind_vertex_buffers(command_buffer, 0, &[rect_buffer], &[0]);
-        context
-            .device
-            .cmd_bind_vertex_buffers(command_buffer, 1, &[line_buffer], &[0]);
 
         let totally_temporary_view_vector = Vec3::new(0., 0., 1.);
 
@@ -303,14 +306,33 @@ impl Renderer {
             view_bytes,
         );
 
-        context.device.cmd_draw_indexed(
-            command_buffer,
-            RECT_INDICES.len() as u32,
-            line_count,
-            0,
-            0,
-            0,
-        );
+        if line_count > 0 {
+            context
+                .device
+                .cmd_bind_vertex_buffers(command_buffer, 1, &[line_buffer], &[0]);
+            context.device.cmd_draw_indexed(
+                command_buffer,
+                RECT_INDICES.len() as u32,
+                line_count,
+                0,
+                0,
+                0,
+            );
+        }
+
+        if new_line_count > 0 {
+            context
+                .device
+                .cmd_bind_vertex_buffers(command_buffer, 1, &[staging_line_buffer], &[0]);
+            context.device.cmd_draw_indexed(
+                command_buffer,
+                RECT_INDICES.len() as u32,
+                new_line_count,
+                0,
+                0,
+                0,
+            );
+        }
 
         context.device.cmd_end_render_pass(command_buffer);
         context.device.end_command_buffer(command_buffer)?;
